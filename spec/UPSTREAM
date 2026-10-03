@@ -1,0 +1,5 @@
+Copied from tadmor by spec/export.sh. Do not edit spec/, conformance/, or
+db/migrations/ here; change them in tadmor and re-export.
+
+commit: 22b1a45ba38259c9a391a995ad73081e407beaa0
+date:   2026-10-03

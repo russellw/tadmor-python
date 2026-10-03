@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local build and run output
+/bin/
+
+# Vendored wheels are committed exactly as unpacked (tools/vendor.py check).
+!/vendor/site/**
+/vendor/site/**/__pycache__/

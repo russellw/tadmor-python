@@ -1,0 +1,8 @@
+# Third-party packages, vendored by tools/vendor.py. One wheel per line:
+#   <name> <version> <wheel filename> sha256:<hex>
+# Edit only through `tools/vendor.py add` and `tools/vendor.py sync`; see docs/stack.md.
+Django 6.1.1 django-6.1.1-py3-none-any.whl sha256:585fb82bf15053c42cf52e67c2f1b54a032dca384759315fd6678ab1870d1d72
+asgiref 3.12.1 asgiref-3.12.1-py3-none-any.whl sha256:fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094
+sqlparse 0.6.0 sqlparse-0.6.0-py3-none-any.whl sha256:b861c0288ce2fa56209a9a6412d2e066ac664b3873b89c26c9d8415e8e32996f
+psycopg 3.3.6 psycopg-3.3.6-py3-none-any.whl sha256:a1db9f7148b06a28606767efaca51fa6f9398c5c0a3810519be69d7000bdb631
+gunicorn 26.2.0 gunicorn-26.2.0-py3-none-any.whl sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3
