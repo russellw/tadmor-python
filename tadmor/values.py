@@ -7,6 +7,7 @@ point.
 """
 
 import datetime
+import decimal
 import re
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
@@ -19,6 +20,11 @@ FX = (8, Decimal(10) ** 11)  # an exchange rate
 
 _DECIMAL = re.compile(r"[+-]?(\d+(\.\d*)?|\.\d+)")
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+# Products of two stored values (19 digits each) must be exact before they
+# are rounded, so every thread computes with ample precision.
+decimal.DefaultContext.prec = 80
+decimal.getcontext().prec = 80
 
 Q4 = Decimal("0.0001")
 ZERO = Decimal(0)
