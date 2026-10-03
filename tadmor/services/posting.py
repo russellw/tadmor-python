@@ -11,7 +11,6 @@ status and message the spec gives it (domain §4.2).
 from collections import defaultdict
 
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
 from ..errors import Conflict, NotFound, Unprocessable
@@ -28,7 +27,7 @@ from ..models import (
 )
 from ..values import ZERO, round4
 from .calendar import period_for_posting
-from .kinds import DocKind, PaymentKind
+from .kinds import CUSTOMER_PAYMENT, PURCHASE_CREDIT_NOTE, SALES_CREDIT_NOTE, SUPPLIER_PAYMENT, DocKind, PaymentKind
 
 
 def base_currency():
@@ -158,8 +157,6 @@ def unpost_document(kind: DocKind, id):
 
 
 def _applied_to(kind, id):
-    from .kinds import CUSTOMER_PAYMENT, PURCHASE_CREDIT_NOTE, SALES_CREDIT_NOTE, SUPPLIER_PAYMENT
-
     pay, note = (CUSTOMER_PAYMENT, SALES_CREDIT_NOTE) if kind.sales else (SUPPLIER_PAYMENT, PURCHASE_CREDIT_NOTE)
     return (
         pay.applications.objects.filter(document_id=id).exists()
@@ -287,8 +284,3 @@ def unpost_movement(id):
         reversal = reverse_entry(sm.journal_entry_id)
         StockMovement.objects.filter(pk=id).update(journal_entry_id=None, period_id=None)
         return reversal.id
-
-
-def posted_lines():
-    """Journal lines of posted entries."""
-    return JournalLine.objects.filter(Q(journal_entry__status="posted"))

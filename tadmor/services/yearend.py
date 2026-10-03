@@ -5,7 +5,7 @@ import datetime
 from django.db import connection, transaction
 
 from ..errors import Conflict, NotFound, Unprocessable
-from ..models import Account, AccountingPeriod, FiscalYear
+from ..models import Account, AccountingPeriod, FiscalYear, JournalEntry
 from ..values import ZERO
 from .calendar import period_for_posting
 from .posting import base_currency, new_entry, reverse_entry
@@ -96,8 +96,6 @@ def reopen(id):
         FiscalYear.objects.filter(pk=id).update(status="open", closing_entry_id=None)
         if year.closing_entry_id is None:
             return None
-        from ..models import JournalEntry
-
         period_id = JournalEntry.objects.get(pk=year.closing_entry_id).period_id
         AccountingPeriod.objects.filter(pk=period_id, status="closed").update(status="open")
         return reverse_entry(year.closing_entry_id).id

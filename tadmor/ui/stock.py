@@ -8,7 +8,7 @@ from django.urls import path, reverse
 
 from ..models import Account, Product, Warehouse
 from ..services import posting, stock
-from ..values import Body, today
+from ..values import today
 from . import choices as ch
 from .base import Column, Field, attempt, crud_form, list_page, login_required
 
@@ -113,9 +113,8 @@ def action(fn, name, admin=False):
 
 
 def _post(request, id):
-    credit = Body({"credit_account_id": request.POST.get("credit_account_id") or None})
-    raw = credit.data["credit_account_id"]
-    return posting.post_movement(id, int(raw) if raw and raw.isdigit() else None)
+    raw = request.POST.get("credit_account_id", "")
+    return posting.post_movement(id, int(raw) if raw.isdigit() else None)
 
 
 @login_required

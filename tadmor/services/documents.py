@@ -7,10 +7,22 @@ writes only the inputs. A PUT replaces the header and the whole line set.
 """
 
 from django.db import transaction
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
 
 from ..errors import BadRequest, Conflict, NotFound, Unprocessable
 from ..values import MONEY, RATE, check_magnitude, fmt4, fmt_date, round4
-from .kinds import DOCUMENTS, PAYMENT_METHODS, DocKind, OrderKind, PaymentKind
+from .kinds import (
+    CUSTOMER_PAYMENT,
+    DOCUMENTS,
+    PAYMENT_METHODS,
+    PURCHASE_CREDIT_NOTE,
+    SALES_CREDIT_NOTE,
+    SUPPLIER_PAYMENT,
+    DocKind,
+    OrderKind,
+    PaymentKind,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -203,7 +215,8 @@ def lines_of(kind, id):
 
 
 def list_lines(kind, id):
-    get_document(kind, id) if isinstance(kind, DocKind) else None
+    if isinstance(kind, DocKind):
+        get_document(kind, id)
     return [line_json(kind, line) for line in lines_of(kind, id)]
 
 
@@ -224,8 +237,6 @@ def credit_note_applications(kind, id):
 
 def applications_to(kind, id):
     """What has been applied to an invoice or bill, by payments and credit notes."""
-    from .kinds import CUSTOMER_PAYMENT, SUPPLIER_PAYMENT, SALES_CREDIT_NOTE, PURCHASE_CREDIT_NOTE
-
     pay, note = (CUSTOMER_PAYMENT, SALES_CREDIT_NOTE) if kind.sales else (SUPPLIER_PAYMENT, PURCHASE_CREDIT_NOTE)
     out = []
     for a in pay.applications.objects.filter(document_id=id).select_related("settler").order_by("id"):
@@ -295,9 +306,6 @@ def delete_payment(kind, id):
 
 
 def _payments(kind):
-    from django.db.models import Sum, Value
-    from django.db.models.functions import Coalesce
-
     return kind.model.objects.select_related(("customer" if kind.sales else "supplier") + "__organization").annotate(
         applied=Coalesce(Sum("applications__amount_applied"), Value(0), output_field=kind.model._meta.get_field("amount"))
     )

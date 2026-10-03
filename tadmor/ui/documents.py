@@ -12,13 +12,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
 
-from ..models import Customer, GLSettings, Product, Supplier, TaxCode
+from ..models import Account, Customer, GLSettings, Product, StockMovement, Supplier, TaxCode
 from ..services import documents, orders, posting, settlement
 from ..services.kinds import DOCUMENTS, ORDERS, PAYMENTS, PAYMENT_METHODS, DocKind, OrderKind
 from ..values import Body, fmt4, today
 from .. import printing
 from . import choices as ch
-from .base import Column, Field, attempt, crud_form, list_page, login_required
+from .base import Column, Field, Form, attempt, crud_form, list_page, login_required
 
 
 def _party_names(sales):
@@ -72,8 +72,6 @@ def _header_fields(kind):
 
 
 def _form_context(kind, header_values, lines, error, title, back):
-    from .base import Form
-
     lk = kind.lines
     sales = kind.sales
     products = {
@@ -90,11 +88,20 @@ def _form_context(kind, header_values, lines, error, title, back):
         "header": Form(_header_fields(kind), header_values).rows(),
         "lines": lines or [], "price_label": "Unit price" if sales else "Unit cost",
         "account_label": "Revenue account" if sales else "Expense account",
-        "product_choices": ch.products()(), "account_choices": ch.postable_accounts(),
-        "tax_choices": ch.tax_codes(), "price_field": lk.price, "account_field": lk.account,
+        "product_choices": _keep(ch.products()(), lines, "product_id"),
+        "account_choices": _keep(ch.postable_accounts(), lines, "account"),
+        "tax_choices": _keep(ch.tax_codes(), lines, "tax_code"),
+        "price_field": lk.price, "account_field": lk.account,
         "client_data": {"products": products, "taxes": taxes, "partyCurrency": party_currency},
         "is_order": isinstance(kind, OrderKind),
     }
+
+
+def _keep(choices, lines, key):
+    """Pickers offer active records, plus any inactive one a line already uses."""
+    have = {str(v) for v, _ in choices}
+    extra = {str(l.get(key)) for l in lines or [] if l.get(key) not in (None, "")} - have
+    return choices + [(v, f"{v} (inactive)") for v in sorted(extra)]
 
 
 def _document_form(request, kind, *, title, initial, initial_lines, save, back):
@@ -269,7 +276,7 @@ def register_payment(kind):
             Field("method", "Method", "select", ch.static(*[(m, m.capitalize()) for m in PAYMENT_METHODS])),
             Field("reference", "Reference"),
             Field(kind.cash_account, "Deposit account" if sales else "Payment account", "ref",
-                  ch.accounts(is_postable=True, is_cash=True), help="Posting needs it."),
+                  ch.accounts(is_postable=True), help="The cash or bank account; posting needs it."),
         ]
 
     @login_required
@@ -360,8 +367,6 @@ def register_payment(kind):
 
 
 def _account_label(id):
-    from ..models import Account
-
     a = Account.objects.filter(pk=id).first() if id else None
     return f"{a.code} {a.name}" if a else None
 
@@ -540,8 +545,6 @@ def register_order(kind: OrderKind):
 
 def _produced(kind, id):
     """The documents and movements fulfilment has produced from an order."""
-    from ..models import StockMovement
-
     doc = kind.document
     lk = doc.lines
     ids = lk.model.objects.filter(order_line_id__in=kind.lines.model.objects.filter(order_id=id).values("id")) \

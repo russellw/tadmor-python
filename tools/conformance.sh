@@ -28,7 +28,7 @@ printf '%s\n' "$password" | python3 manage.py adduser --email "$email" --name 'C
 
 echo "==> Starting server on $HTTP_ADDR (email disabled)"
 env -u SMTP_ADDR -u SMTP_USER -u SMTP_PASS -u MAIL_FROM \
-	python3 -m gunicorn tadmor.wsgi --bind "$HTTP_ADDR" --workers 4 \
+	DB_CONN_MAX_AGE=60 python3 -m gunicorn tadmor.wsgi --bind "$HTTP_ADDR" --workers 4 \
 	>"$repo_root/bin/conformance-server.log" 2>&1 &
 server_pid=$!
 trap 'kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true' EXIT

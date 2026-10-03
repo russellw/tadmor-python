@@ -9,7 +9,7 @@ from django.db import connection
 
 from ..errors import NotFound
 from ..models import Account, JournalEntry
-from ..values import ZERO, fmt4, fmt_date, fmt_rate
+from ..values import fmt4, fmt_date, fmt_rate
 
 
 def _rows(sql, params=()):
@@ -158,10 +158,3 @@ def inventory_valuation():
            FROM stock_valuation v JOIN products p ON p.id = v.product_id ORDER BY p.sku, p.id"""
     )
     return _money(rows, "qty_on_hand", "value_on_hand", "avg_unit_cost")
-
-
-def totals(rows, *fields):
-    """Column totals of a report, for the UI's total rows."""
-    from decimal import Decimal
-
-    return {f: fmt4(sum((Decimal(r[f]) for r in rows), ZERO)) for f in fields}

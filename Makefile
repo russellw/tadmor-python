@@ -23,7 +23,7 @@ run: ## Run the development server (migrates on start, reloads on change)
 	DATABASE_URL=$(DATABASE_URL) $(PYTHON) manage.py runserver $(HTTP_ADDR)
 
 serve: ## Run the production server (gunicorn) on HTTP_ADDR
-	DATABASE_URL=$(DATABASE_URL) $(PYTHON) -m gunicorn tadmor.wsgi --bind $(HTTP_ADDR) --workers 4
+	DATABASE_URL=$(DATABASE_URL) DB_CONN_MAX_AGE=60 $(PYTHON) -m gunicorn tadmor.wsgi --bind $(HTTP_ADDR) --workers 4
 
 migrate: ## Apply pending shared-schema migrations
 	DATABASE_URL=$(DATABASE_URL) $(PYTHON) manage.py dbmigrate

@@ -3,12 +3,13 @@
 import datetime
 from decimal import Decimal
 
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
 
 from ..models import Account, AccountingPeriod, FiscalYear
 from ..services import banking, calendar, master, yearend
+from ..services.posting import base_currency
 from ..values import Body, fmt_date
 from . import choices as ch
 from .base import Column, Field, admin_required, attempt, crud_form, list_page, login_required
@@ -147,8 +148,6 @@ RATE_FIELDS = [Field("currency_code", "Currency", "select", ch.currencies, requi
 
 @login_required
 def rates(request):
-    from ..services.posting import base_currency
-
     return list_page(
         request, title="Exchange rates", rows=master.list_exchange_rates(),
         columns=[Column("Currency", "currency_code"), Column("Date", "rate_date"), Column("Rate", "rate", True)],
@@ -169,8 +168,6 @@ def new_rate(request):
 def edit_rate(request, currency, date):
     rows = [r for r in master.list_exchange_rates() if r["currency_code"] == currency and r["rate_date"] == date]
     if not rows:
-        from django.http import Http404
-
         raise Http404("no such rate")
     return crud_form(request, title=f"{currency} rate on {date}", fields=RATE_FIELDS, initial=rows[0], editing=True,
                      save=lambda b: master.update_exchange_rate(currency, date, b),

@@ -92,9 +92,3 @@ def _friendly(state, diag):
     if state == "23P01":
         return "overlaps an existing record"
     return None
-
-
-def constraint_name(exc):
-    cause = exc.__cause__ if isinstance(exc, DatabaseError) else exc
-    diag = getattr(cause, "diag", None)
-    return getattr(diag, "constraint_name", None)
