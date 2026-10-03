@@ -379,8 +379,9 @@ The request body carries CSV text with the columns
 - Every data record needs 3 or 4 fields, a valid date, a non-empty
   description, and an amount matching `-?(\d+(\.\d*)?|\.\d+)` that is not
   zero.
-- Any bad record rejects the whole import (400) and adds nothing. CSV with
-  no data rows is also a 400.
+- Any bad record rejects the whole import (422) and adds nothing. CSV with
+  no data rows is also a 422. An empty `csv` field is a 400 (`api.md`
+  §5.13).
 - Lines are appended after any existing ones.
 
 ### 8.3 Matching
