@@ -6,9 +6,9 @@
     <a class="button" href="{% url 'accounting-periods-new' %}">New period</a></div>
 </div>
 {% if user.is_admin and closable or user.is_admin and reopenable %}
-<div class="card" style="margin-bottom:1rem">
+<div class="card mb">
   <strong>Year-end</strong>
-  <div class="actions" style="margin-top:.4rem">
+  <div class="actions mt-s">
     {% if closable %}<a class="button" href="{% url 'fiscal-years-close' closable.id %}">Close {{ closable.name }}…</a>{% endif %}
     {% if reopenable %}<form method="post" action="{% url 'fiscal-years-reopen' reopenable.id %}">{% csrf_token %}<button>Reopen {{ reopenable.name }}</button></form>{% endif %}
   </div>
@@ -17,7 +17,7 @@
 {% endif %}
 {% for item in years %}
 <h2><a href="{% url 'fiscal-years-edit' item.year.id %}">{{ item.year.name }}</a>
-  <span class="muted" style="font-weight:normal">{{ item.year.start_date|date:"Y-m-d" }} to {{ item.year.end_date|date:"Y-m-d" }}</span>
+  <span class="muted plain">{{ item.year.start_date|date:"Y-m-d" }} to {{ item.year.end_date|date:"Y-m-d" }}</span>
   <span class="pill s-{{ item.year.status }}">{{ item.year.status|label }}</span></h2>
 {% if item.periods %}
 <div class="tablewrap"><table class="grid">

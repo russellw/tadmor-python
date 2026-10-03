@@ -19,7 +19,7 @@
     </dl>
   </div>
   <div class="card">
-    <table class="totals" style="margin-left:0;width:100%">
+    <table class="totals full">
       <tr><td>Subtotal</td><td class="num">{{ doc.currency_code }} {{ subtotal|amount }}</td></tr>
       <tr><td>Tax</td><td class="num">{{ doc.currency_code }} {{ tax_total|amount }}</td></tr>
       <tr><td><strong>Total</strong></td><td class="num"><strong>{{ doc.currency_code }} {{ doc.total|amount }}</strong></td></tr>

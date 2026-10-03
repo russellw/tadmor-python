@@ -1,8 +1,8 @@
 <details{% if action_error.email or email_result %} open{% endif %}>
   <summary>Email</summary>
-  <form method="post" action="{{ email_url }}" class="actions" style="margin-top:.5rem">
+  <form method="post" action="{{ email_url }}" class="actions mt-s">
     {% csrf_token %}
-    <input name="to" placeholder="Recipients, comma separated (blank: the counterparty's email on file)" style="min-width:24rem;width:auto">
+    <input class="wide-input" name="to" placeholder="Recipients, comma separated (blank: the counterparty's email on file)">
     <button>Send</button>
   </form>
   {% if action_error.email %}<p class="error" role="alert">{{ action_error.email }}</p>{% endif %}

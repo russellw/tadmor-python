@@ -12,7 +12,7 @@
     <dt>{{ cash_label }}</dt><dd>{{ cash_account|default:"—" }}</dd>
     <dt>Journal entry</dt><dd>{% if p.journal_entry_id %}<a href="{% url 'journal-entry' p.journal_entry_id %}">Entry {{ p.journal_entry_id }}</a>{% else %}—{% endif %}</dd>
   </dl></div>
-  <div class="card"><table class="totals" style="margin-left:0;width:100%">
+  <div class="card"><table class="totals full">
     <tr><td><strong>Amount</strong></td><td class="num"><strong>{{ p.currency_code }} {{ p.amount|amount }}</strong></td></tr>
     <tr><td>Applied</td><td class="num">{{ p.currency_code }} {{ p.amount_applied|amount }}</td></tr>
     <tr><td><strong>Unapplied</strong></td><td class="num"><strong>{{ p.currency_code }} {{ p.unapplied|amount }}</strong></td></tr>

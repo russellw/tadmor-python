@@ -15,7 +15,7 @@
     <dt>Reference</dt><dd>{{ o.reference|default:"—" }}</dd>
     <dt>Memo</dt><dd>{{ o.memo|default:"—"|linebreaksbr }}</dd>
   </dl></div>
-  <div class="card"><table class="totals" style="margin-left:0;width:100%">
+  <div class="card"><table class="totals full">
     <tr><td>Subtotal</td><td class="num">{{ o.currency_code }} {{ subtotal|amount }}</td></tr>
     <tr><td>Tax</td><td class="num">{{ o.currency_code }} {{ tax_total|amount }}</td></tr>
     <tr><td><strong>Total</strong></td><td class="num"><strong>{{ o.currency_code }} {{ o.total|amount }}</strong></td></tr>
@@ -58,7 +58,7 @@
 
 {% if produced.documents or produced.movements %}
 <h2>Produced from this order</h2>
-<ul class="card" style="list-style:none;padding-left:1.2rem">
+<ul class="card plainlist">
   {% for number, status, url in produced.documents %}<li><a href="{{ url }}">{% if kind.sales %}Invoice{% else %}Bill{% endif %} {{ number }}</a> <span class="pill s-{{ status }}">{{ status|label }}</span></li>{% endfor %}
   {% for id, date, status, url in produced.movements %}<li><a href="{{ url }}">Stock movement {{ id }}</a> {{ date|date:"Y-m-d" }} <span class="pill s-{{ status }}">{{ status|label }}</span></li>{% endfor %}
 </ul>

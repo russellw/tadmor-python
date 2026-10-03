@@ -22,7 +22,7 @@
     <form method="post" action="{% url 'stock-movements-post' m.id %}" class="actions">{% csrf_token %}
       {% if m.movement_type == "receipt" %}
       <label>Account to credit
-        <select name="credit_account_id" style="width:auto">{% for v, t in credit_choices %}<option value="{{ v }}"{% if v|stringformat:"s" == default_credit|stringformat:"s" %} selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+        <select class="auto" name="credit_account_id">{% for v, t in credit_choices %}<option value="{{ v }}"{% if v|stringformat:"s" == default_credit|stringformat:"s" %} selected{% endif %}>{{ t }}</option>{% endfor %}</select>
       </label>
       {% endif %}
       <button class="primary">Post</button>

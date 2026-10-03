@@ -101,3 +101,15 @@ details summary { cursor: pointer; color: var(--accent); }
   .navgroup { margin: 0; }
   main { padding: 1rem; }
 }
+/* Utilities, since the Content Security Policy forbids inline styles. */
+.plain { font-weight: normal; }
+.small { font-size: .9rem; }
+.plainlist { list-style: none; padding-left: 1.2rem; }
+.mb { margin-bottom: 1rem; }
+.mb-l { margin-bottom: 1.2rem; }
+.mt { margin-top: 1rem; }
+.mt-s { margin-top: .45rem; }
+.mt-0 { margin-top: 0; }
+table.totals.full { margin-left: 0; width: 100%; }
+input.auto, select.auto { width: auto; }
+input.wide-input { min-width: 24rem; width: auto; }

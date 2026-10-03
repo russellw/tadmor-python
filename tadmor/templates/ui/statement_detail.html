@@ -18,7 +18,7 @@
     <dt>Reference</dt><dd>{{ s.reference|default:"—" }}</dd>
     <dt>Lines matched</dt><dd>{{ s.matched_count }} of {{ s.line_count }}</dd>
   </dl></div>
-  <div class="card"><table class="totals" style="margin-left:0;width:100%">
+  <div class="card"><table class="totals full">
     <tr><td>Opening balance</td><td class="num">{{ s.opening_balance|amount }}</td></tr>
     <tr><td>Lines</td><td class="num">{{ s.lines_total|amount }}</td></tr>
     <tr><td>Closing balance</td><td class="num">{{ s.closing_balance|amount }}</td></tr>
@@ -51,14 +51,14 @@
       {% elif s.status == "open" %}
         {% if l.candidates %}
         <form method="post" action="{% url 'bank-lines-match' s.id l.id %}" class="actions">{% csrf_token %}
-          <select name="journal_line_id" style="width:auto">{% for c in l.candidates %}<option value="{{ c.journal_line_id }}">{{ c.entry_date }} · entry {{ c.journal_entry_id }} · {{ c.memo|default:c.reference|default:"" }} · {{ c.amount|amount }}</option>{% endfor %}</select>
+          <select class="auto" name="journal_line_id">{% for c in l.candidates %}<option value="{{ c.journal_line_id }}">{{ c.entry_date }} · entry {{ c.journal_entry_id }} · {{ c.memo|default:c.reference|default:"" }} · {{ c.amount|amount }}</option>{% endfor %}</select>
           <button>Match</button>
         </form>
         {% else %}<span class="muted">No candidate of this amount.</span>{% endif %}
         {% if all_candidates %}
         <details><summary>All candidates</summary>
           <form method="post" action="{% url 'bank-lines-match' s.id l.id %}" class="actions">{% csrf_token %}
-            <select name="journal_line_id" style="width:auto">{% for c in all_candidates %}<option value="{{ c.journal_line_id }}">{{ c.entry_date }} · entry {{ c.journal_entry_id }} · {{ c.memo|default:c.reference|default:"" }} · {{ c.amount|amount }}</option>{% endfor %}</select>
+            <select class="auto" name="journal_line_id">{% for c in all_candidates %}<option value="{{ c.journal_line_id }}">{{ c.entry_date }} · entry {{ c.journal_entry_id }} · {{ c.memo|default:c.reference|default:"" }} · {{ c.amount|amount }}</option>{% endfor %}</select>
             <button>Match</button>
           </form>
         </details>
@@ -71,7 +71,7 @@
 </table></div>
 
 {% if s.status == "open" %}
-<div class="columns" style="margin-top:1rem">
+<div class="columns mt">
   <form method="post" action="{% url 'bank-statements-add-line' s.id %}" class="card form">
     {% csrf_token %}
     <strong>Add a line</strong>
