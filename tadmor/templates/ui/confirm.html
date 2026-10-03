@@ -1,0 +1,13 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1></div>
+<form method="post" class="card form">
+  {% csrf_token %}
+  <p>{{ question }}</p>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <div class="actions">
+    <button class="danger">{{ confirm|default:"Delete" }}</button>
+    <a class="button" href="{{ back }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

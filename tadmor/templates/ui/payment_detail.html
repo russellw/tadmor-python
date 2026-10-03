@@ -1,0 +1,40 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead">
+  <h1>{{ title }} <span class="pill s-{{ p.status }}">{{ p.status|label }}</span></h1>
+</div>
+<div class="columns">
+  <div class="card"><dl class="facts">
+    <dt>{% if kind.sales %}Customer{% else %}Supplier{% endif %}</dt><dd>{{ party }}</dd>
+    <dt>Date</dt><dd>{{ p.payment_date }}</dd>
+    <dt>Method</dt><dd>{{ p.method|label|default:"—" }}</dd>
+    <dt>Reference</dt><dd>{{ p.reference|default:"—" }}</dd>
+    <dt>{{ cash_label }}</dt><dd>{{ cash_account|default:"—" }}</dd>
+    <dt>Journal entry</dt><dd>{% if p.journal_entry_id %}<a href="{% url 'journal-entry' p.journal_entry_id %}">Entry {{ p.journal_entry_id }}</a>{% else %}—{% endif %}</dd>
+  </dl></div>
+  <div class="card"><table class="totals" style="margin-left:0;width:100%">
+    <tr><td><strong>Amount</strong></td><td class="num"><strong>{{ p.currency_code }} {{ p.amount|amount }}</strong></td></tr>
+    <tr><td>Applied</td><td class="num">{{ p.currency_code }} {{ p.amount_applied|amount }}</td></tr>
+    <tr><td><strong>Unapplied</strong></td><td class="num"><strong>{{ p.currency_code }} {{ p.unapplied|amount }}</strong></td></tr>
+  </table></div>
+</div>
+<h2>Actions</h2>
+<div class="card">
+  <div class="actions">
+  {% if p.status == "draft" %}
+    <form method="post" action="{% url c|add:'-post' p.id %}">{% csrf_token %}<button class="primary">Post</button></form>
+    <a class="button" href="{% url c|add:'-edit' p.id %}">Edit</a>
+    <a class="button" href="{% url c|add:'-delete' p.id %}">Delete</a>
+  {% elif p.status == "posted" %}
+    {% if p.unapplied != "0.0000" %}<form method="post" action="{% url c|add:'-apply' p.id %}">{% csrf_token %}<button class="primary">Apply to open {% if kind.sales %}invoices{% else %}bills{% endif %}</button></form>{% endif %}
+    {% if user.is_admin %}<form method="post" action="{% url c|add:'-unpost' p.id %}">{% csrf_token %}<button>Unpost</button></form>{% endif %}
+  {% endif %}
+  </div>
+  {% for name, message in action_error.items %}<p class="error" role="alert">{{ message }}</p>{% endfor %}
+</div>
+<h2>Applied to</h2>
+{% if applications %}
+<div class="tablewrap"><table class="grid"><thead><tr><th>{{ doc_label }}</th><th class="num">Amount applied</th></tr></thead>
+<tbody>{% for a in applications %}<tr><td><a href="{{ a.url }}">{{ a.document_number }}</a></td><td class="num">{{ p.currency_code }} {{ a.amount_applied|amount }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="empty">Not applied to anything yet.</p>{% endif %}
+{% endblock %}

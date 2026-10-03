@@ -1,0 +1,22 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>Balance sheet</h1></div>
+{% include "ui/report_filters.html" with filters=filters_asof %}
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>Code</th><th>Account</th><th class="num">Amount</th></tr></thead>
+  <tbody>
+    <tr class="section"><td colspan="3">Assets</td></tr>
+    {% include "ui/report_rows.html" with rows=sections.asset %}
+    <tr class="subtotal"><td colspan="2">Total assets</td><td class="num">{{ totals.asset|amount }}</td></tr>
+    <tr class="section"><td colspan="3">Liabilities</td></tr>
+    {% include "ui/report_rows.html" with rows=sections.liability %}
+    <tr class="subtotal"><td colspan="2">Total liabilities</td><td class="num">{{ totals.liability|amount }}</td></tr>
+    <tr class="section"><td colspan="3">Equity</td></tr>
+    {% include "ui/report_rows.html" with rows=sections.equity %}
+    <tr class="subtotal"><td colspan="2">Total equity</td><td class="num">{{ totals.equity|amount }}</td></tr>
+    <tr><td colspan="2">Current earnings (revenue less expenses not yet closed to equity)</td><td class="num">{{ earnings|amount }}</td></tr>
+  </tbody>
+  <tfoot><tr><td colspan="2">Liabilities + equity + current earnings</td><td class="num">{{ liabilities_and_equity|amount }}</td></tr></tfoot>
+</table></div>
+<p class="muted">Assets ({{ totals.asset|amount }}) equal liabilities, equity, and current earnings ({{ liabilities_and_equity|amount }}).</p>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead">
+  <h1>{{ kind.label }} {{ o.order_number }} <span class="pill s-{{ o.status }}">{{ o.status|label }}</span></h1>
+  <a class="button" href="/api/{{ c }}/{{ o.id }}/pdf" target="_blank" rel="noopener">PDF</a>
+</div>
+<div class="columns">
+  <div class="card"><dl class="facts">
+    <dt>{% if kind.sales %}Customer{% else %}Supplier{% endif %}</dt><dd>{{ party }}</dd>
+    <dt>Order date</dt><dd>{{ o.order_date }}</dd>
+    <dt>Expected {% if kind.sales %}ship{% else %}receipt{% endif %}</dt><dd>{{ o|get:kind.expected_date|default:"—" }}</dd>
+    <dt>Currency</dt><dd>{{ o.currency_code }}</dd>
+    <dt>{{ kind.billed|label }}</dt><dd>{% with s=kind.billed|add:"_status" %}<span class="pill s-{{ o|get:s }}">{{ o|get:s|label }}</span>{% endwith %}</dd>
+    <dt>{{ kind.moved|label }}</dt><dd>{% with s=kind.moved|add:"_status" %}<span class="pill s-{{ o|get:s }}">{{ o|get:s|label }}</span>{% endwith %}</dd>
+    <dt>Reference</dt><dd>{{ o.reference|default:"—" }}</dd>
+    <dt>Memo</dt><dd>{{ o.memo|default:"—"|linebreaksbr }}</dd>
+  </dl></div>
+  <div class="card"><table class="totals" style="margin-left:0;width:100%">
+    <tr><td>Subtotal</td><td class="num">{{ o.currency_code }} {{ subtotal|amount }}</td></tr>
+    <tr><td>Tax</td><td class="num">{{ o.currency_code }} {{ tax_total|amount }}</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>{{ o.currency_code }} {{ o.total|amount }}</strong></td></tr>
+  </table></div>
+</div>
+
+<h2>Actions</h2>
+<div class="card">
+  <div class="actions">
+  {% if o.status == "draft" %}
+    <form method="post" action="{% url c|add:'-confirm' o.id %}">{% csrf_token %}<button class="primary">Confirm</button></form>
+    <a class="button" href="{% url c|add:'-edit' o.id %}">Edit</a>
+    <a class="button" href="{% url c|add:'-delete' o.id %}">Delete</a>
+    <form method="post" action="{% url c|add:'-cancel' o.id %}">{% csrf_token %}<button>Cancel order</button></form>
+  {% elif o.status == "open" %}
+    {% if can_bill %}<a class="button primary" href="{% url c|add:'-bill' o.id %}">{{ kind.bill_verb|capfirst }}</a>{% endif %}
+    {% if can_move %}<a class="button primary" href="{% url c|add:'-move' o.id %}">{{ kind.move_verb|capfirst }}</a>{% endif %}
+    <form method="post" action="{% url c|add:'-close' o.id %}">{% csrf_token %}<button>Close</button></form>
+    {% if not fulfilled %}<form method="post" action="{% url c|add:'-cancel' o.id %}">{% csrf_token %}<button>Cancel order</button></form>{% endif %}
+  {% endif %}
+  </div>
+  {% for name, message in action_error.items %}{% if name != "email" %}<p class="error" role="alert">{{ message }}</p>{% endif %}{% endfor %}
+  {% url c|add:'-email' o.id as email_url %}
+  {% include "ui/document_actions_email.html" %}
+</div>
+
+<h2>Lines</h2>
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>#</th><th>Description</th><th class="num">Ordered</th><th class="num">{% if kind.sales %}Unit price{% else %}Unit cost{% endif %}</th>
+    <th class="num">Tax %</th><th class="num">Total</th>
+    <th class="num">{{ kind.billed|capfirst }}</th><th class="num">To {{ kind.bill_verb }}</th>
+    <th class="num">{{ kind.moved|capfirst }}</th><th class="num">To {{ kind.move_verb }}</th></tr></thead>
+  <tbody>{% for l in lines %}<tr>
+    <td>{{ l.line_no }}</td><td>{{ l.description }}</td><td class="num">{{ l.quantity|qty }}</td>
+    <td class="num">{{ l|get:price_field|amount }}</td><td class="num">{{ l.tax_rate|qty }}</td><td class="num">{{ l.line_total|amount }}</td>
+    <td class="num">{{ l|get:billed_q|qty }}</td><td class="num">{{ l|get:to_bill_q|qty }}</td>
+    <td class="num">{{ l|get:moved_q|qty }}</td><td class="num">{{ l|get:to_move_q|qty }}</td>
+  </tr>{% empty %}<tr><td colspan="10" class="empty">No lines.</td></tr>{% endfor %}</tbody>
+</table></div>
+
+{% if produced.documents or produced.movements %}
+<h2>Produced from this order</h2>
+<ul class="card" style="list-style:none;padding-left:1.2rem">
+  {% for number, status, url in produced.documents %}<li><a href="{{ url }}">{% if kind.sales %}Invoice{% else %}Bill{% endif %} {{ number }}</a> <span class="pill s-{{ status }}">{{ status|label }}</span></li>{% endfor %}
+  {% for id, date, status, url in produced.movements %}<li><a href="{{ url }}">Stock movement {{ id }}</a> {{ date|date:"Y-m-d" }} <span class="pill s-{{ status }}">{{ status|label }}</span></li>{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

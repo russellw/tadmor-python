@@ -1,0 +1,9 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<h1>{{ title|default:"Not found" }}</h1>
+<p>{{ message|default:"There is nothing at this address." }}</p>
+<p><a href="/">Go to the home page</a></p>
+{% endblock %}
+{% block bare %}
+<div class="card login"><h1>{{ title|default:"Not found" }}</h1><p>{{ message|default:"There is nothing at this address." }}</p><p><a href="/">Go to the home page</a></p></div>
+{% endblock %}

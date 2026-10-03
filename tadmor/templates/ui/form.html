@@ -1,0 +1,16 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1></div>
+<form method="post" class="card form">
+  {% csrf_token %}
+  {% if readonly %}<p class="muted">Only administrators can change these.</p>{% endif %}
+  {% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+  {% for row in form %}{% include "ui/field.html" %}{% endfor %}
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <div class="actions">
+    {% if not readonly %}<button class="primary">Save</button>{% endif %}
+    <a class="button" href="{{ back }}">{% if readonly %}Back{% else %}Cancel{% endif %}</a>
+  </div>
+</form>
+{% block below %}{% for section in sections %}{% include section.template %}{% endfor %}{% endblock %}
+{% endblock %}

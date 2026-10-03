@@ -1,0 +1,16 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1></div>
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>{% if sales %}Customer{% else %}Supplier{% endif %}</th><th class="num">Not yet due</th><th class="num">1–30 days</th>
+    <th class="num">31–60 days</th><th class="num">61–90 days</th><th class="num">Over 90 days</th><th class="num">Total</th></tr></thead>
+  <tbody>{% for r in rows %}<tr>
+    <td><a href="{% url party_url r.party_id %}">{{ r.party_name }}</a></td>
+    <td class="num">{{ r.not_yet_due|amount }}</td><td class="num">{{ r.days_1_30|amount }}</td><td class="num">{{ r.days_31_60|amount }}</td>
+    <td class="num">{{ r.days_61_90|amount }}</td><td class="num">{{ r.days_over_90|amount }}</td><td class="num">{{ r.total_outstanding|amount }}</td>
+  </tr>{% empty %}<tr><td colspan="7" class="muted">Nothing outstanding.</td></tr>{% endfor %}</tbody>
+  <tfoot><tr><td>Total</td><td class="num">{{ totals.not_yet_due|amount }}</td><td class="num">{{ totals.days_1_30|amount }}</td><td class="num">{{ totals.days_31_60|amount }}</td>
+    <td class="num">{{ totals.days_61_90|amount }}</td><td class="num">{{ totals.days_over_90|amount }}</td><td class="num">{{ totals.total_outstanding|amount }}</td></tr></tfoot>
+</table></div>
+<p class="muted">Posted {% if sales %}invoices{% else %}bills{% endif %} with a balance, by due date against today (UTC), in each document's own currency.</p>
+{% endblock %}

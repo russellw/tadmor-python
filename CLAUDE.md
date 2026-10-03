@@ -19,5 +19,12 @@ reviewable in-repo. The only permitted third-party packages are those listed in
 docs/stack.md. New packages need a conversation first. All third-party source is
 vendored and committed; nothing is installed from PyPI at build or run time.
 
+Working on it:
+Business rules live in tadmor/services/, shared by the JSON API (tadmor/api/)
+and the HTML UI (tadmor/ui/). Never put a rule in a view.
+spec/, conformance/, and db/migrations/ are copies from tadmor (spec/UPSTREAM);
+never edit them here. Re-export from tadmor with spec/export.sh.
+Before committing, run `make test` and `make conformance`; both must pass.
+
 Version control:
 Commit directly to the default branch. Do not create feature branches.

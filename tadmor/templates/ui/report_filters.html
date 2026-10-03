@@ -1,0 +1,6 @@
+<form method="get" class="filters">
+  {% for name, text in filters %}<label>{{ text }} <input type="date" name="{{ name }}" value="{{ params|get:name|default:'' }}"></label>{% endfor %}
+  <button>Show</button>
+  <span class="muted">Leave a date blank for no bound.</span>
+</form>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}

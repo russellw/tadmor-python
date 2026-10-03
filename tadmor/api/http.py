@@ -10,7 +10,7 @@ tadmor.auth.SessionMiddleware.
 import json
 import logging
 
-from django.db import DatabaseError
+from django.db import DatabaseError, transaction
 from django.http import HttpResponse, JsonResponse
 from django.urls import path, re_path
 from django.views.decorators.csrf import csrf_exempt
@@ -60,9 +60,12 @@ def body(request):
 
 
 def call(handler, request, **kwargs):
-    """Run a handler, translating ApiErrors and client-caused database errors."""
+    """Run a handler in one transaction, translating ApiErrors and
+    client-caused database errors (including those raised at commit by
+    the schema's deferred constraint triggers)."""
     try:
-        return handler(request, **kwargs)
+        with transaction.atomic():
+            return handler(request, **kwargs)
     except ApiError as e:
         return error_response(e.status, e.message)
     except DatabaseError as e:

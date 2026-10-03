@@ -1,0 +1,66 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>Home</h1><span class="sub">Today is {{ today|date:"Y-m-d" }} (UTC)</span></div>
+
+<div class="actions" style="margin-bottom:1.2rem">
+  <a class="button primary" href="{% url 'sales-invoices-new' %}">New invoice</a>
+  <a class="button" href="{% url 'customer-payments-new' %}">New customer payment</a>
+  <a class="button primary" href="{% url 'purchase-bills-new' %}">New bill</a>
+  <a class="button" href="{% url 'supplier-payments-new' %}">New supplier payment</a>
+  <a class="button" href="{% url 'sales-orders-new' %}">New sales order</a>
+  <a class="button" href="{% url 'purchase-orders-new' %}">New purchase order</a>
+</div>
+
+<div class="columns">
+  <section class="card">
+    <h2 style="margin-top:0">Receivables outstanding</h2>
+    {% for r in receivables %}
+    <p><span class="big">{{ r.currency_code }} {{ r.total|amount }}</span><br>
+      <span class="muted">{{ r.n }} invoice{{ r.n|pluralize }}, overdue {{ r.currency_code }} {{ r.overdue|default:0|amount }}</span></p>
+    {% empty %}<p class="muted">Nothing outstanding.</p>{% endfor %}
+  </section>
+  <section class="card">
+    <h2 style="margin-top:0">Payables outstanding</h2>
+    {% for r in payables %}
+    <p><span class="big">{{ r.currency_code }} {{ r.total|amount }}</span><br>
+      <span class="muted">{{ r.n }} bill{{ r.n|pluralize }}, overdue {{ r.currency_code }} {{ r.overdue|default:0|amount }}</span></p>
+    {% empty %}<p class="muted">Nothing outstanding.</p>{% endfor %}
+  </section>
+  <section class="card">
+    <h2 style="margin-top:0">Work in progress</h2>
+    <dl class="facts">
+      <dt><a href="{% url 'sales-orders' %}">Open sales orders</a></dt><dd>{{ counts.sales_orders }}</dd>
+      <dt><a href="{% url 'purchase-orders' %}">Open purchase orders</a></dt><dd>{{ counts.purchase_orders }}</dd>
+      <dt><a href="{% url 'sales-invoices' %}">Draft invoices</a></dt><dd>{{ counts.draft_invoices }}</dd>
+      <dt><a href="{% url 'purchase-bills' %}">Draft bills</a></dt><dd>{{ counts.draft_bills }}</dd>
+    </dl>
+  </section>
+</div>
+
+<div class="columns">
+  <section>
+    <h2>Most overdue invoices <a class="muted" href="{% url 'ar-aging' %}" style="font-weight:normal;font-size:.9rem">AR aging</a></h2>
+    {% if overdue %}
+    <div class="tablewrap"><table class="grid">
+      <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th class="num">Balance</th></tr></thead>
+      <tbody>{% for b in overdue %}<tr>
+        <td><a href="{% url 'sales-invoices-detail' b.invoice_id %}">{{ b.invoice.invoice_number }}</a></td>
+        <td>{{ b.invoice.customer.organization.name }}</td><td>{{ b.due_date|date:"Y-m-d" }}</td>
+        <td class="num">{{ b.currency_code }} {{ b.balance|amount }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">No overdue invoices.</p>{% endif %}
+  </section>
+  <section>
+    <h2>Bills due in the next 14 days <a class="muted" href="{% url 'ap-aging' %}" style="font-weight:normal;font-size:.9rem">AP aging</a></h2>
+    {% if due_soon %}
+    <div class="tablewrap"><table class="grid">
+      <thead><tr><th>Bill</th><th>Supplier</th><th>Due</th><th class="num">Balance</th></tr></thead>
+      <tbody>{% for b in due_soon %}<tr>
+        <td><a href="{% url 'purchase-bills-detail' b.bill_id %}">{{ b.bill.bill_number }}</a></td>
+        <td>{{ b.bill.supplier.organization.name }}</td><td>{{ b.due_date|date:"Y-m-d" }}</td>
+        <td class="num">{{ b.currency_code }} {{ b.balance|amount }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">No bills due soon.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

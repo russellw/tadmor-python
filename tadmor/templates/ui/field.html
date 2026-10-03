@@ -1,0 +1,22 @@
+{% with f=row.field %}
+<label class="field{% if f.type == 'bool' %} check{% endif %}">
+  {% if f.type == "bool" %}
+  <input type="checkbox" name="{{ f.name }}"{% if row.value %} checked{% endif %}{% if row.readonly or readonly %} disabled{% endif %}> {{ f.label }}
+  {% else %}
+  <span>{{ f.label }}{% if f.required %} <span class="req" aria-hidden="true">*</span>{% endif %}</span>
+  {% if f.type == "select" or f.type == "ref" %}
+  <select name="{{ f.name }}"{% if row.readonly or readonly %} disabled{% endif %}{% if f.required %} required{% endif %}>
+    <option value="">{% if f.required %}Choose…{% else %}None{% endif %}</option>
+    {% for value, text in row.choices %}<option value="{{ value }}"{% if value|stringformat:"s" == row.value|stringformat:"s" %} selected{% endif %}>{{ text }}</option>{% endfor %}
+  </select>
+  {% elif f.type == "textarea" %}
+  <textarea name="{{ f.name }}" rows="4"{% if row.readonly or readonly %} readonly{% endif %}>{{ row.value }}</textarea>
+  {% else %}
+  <input name="{{ f.name }}" value="{{ row.value }}"{% if row.readonly or readonly %} readonly{% endif %}
+    {% if f.type == "date" %} type="date"{% elif f.type == "email" %} type="email"{% elif f.type == "password" %} type="password" autocomplete="new-password"{% elif f.type == "decimal" %} inputmode="decimal" class="num" pattern="-?[0-9]*\.?[0-9]*"{% elif f.type == "int" %} inputmode="numeric" class="num"{% else %} type="text"{% endif %}
+    {% if f.required %} required{% endif %}>
+  {% endif %}
+  {% endif %}
+  {% if f.help %}<small class="muted">{{ f.help }}</small>{% endif %}
+</label>
+{% endwith %}

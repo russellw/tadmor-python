@@ -32,7 +32,11 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
         "OPTIONS": {
-            "context_processors": ["django.template.context_processors.csrf"],
+            "context_processors": [
+                "django.template.context_processors.csrf",
+                "django.template.context_processors.request",
+                "tadmor.ui.context.nav",
+            ],
             "builtins": ["tadmor.ui.templatetags"],
         },
     }
@@ -52,7 +56,9 @@ def _database(url):
         "HOST": u.hostname or "",
         "PORT": str(u.port or ""),
         "OPTIONS": options,
-        "CONN_MAX_AGE": 60,
+        # Seconds to keep a connection between requests. Worth setting under
+        # gunicorn's fixed workers; the threaded dev server would leak them.
+        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "0")),
         "CONN_HEALTH_CHECKS": True,
     }
 
@@ -75,6 +81,7 @@ EMAIL_USE_SSL = EMAIL_PORT == 465
 DEFAULT_FROM_EMAIL = os.environ.get("MAIL_FROM", "")
 
 MIGRATIONS_DIR = BASE_DIR / "db" / "migrations"
+TEST_RUNNER = "tadmor.testing.Runner"
 
 LOGGING = {
     "version": 1,

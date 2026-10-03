@@ -1,0 +1,22 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>Journal entry {{ e.id }} <span class="pill s-{{ e.status }}">{{ e.status|label }}</span></h1></div>
+<div class="card"><dl class="facts">
+  <dt>Date</dt><dd>{{ e.entry_date }}</dd>
+  <dt>Currency</dt><dd>{{ e.currency_code }}</dd>
+  <dt>Exchange rate</dt><dd>{{ e.exchange_rate }}</dd>
+  <dt>Reference</dt><dd>{{ e.reference|default:"—" }}</dd>
+  <dt>Memo</dt><dd>{{ e.memo|default:"—" }}</dd>
+  {% if e.reverses_entry_id %}<dt>Reverses</dt><dd><a href="{% url 'journal-entry' e.reverses_entry_id %}">Entry {{ e.reverses_entry_id }}</a></dd>{% endif %}
+  {% if e.is_closing %}<dt>Kind</dt><dd>Year-end closing entry</dd>{% endif %}
+</dl></div>
+<h2>Lines</h2>
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>#</th><th>Account</th><th>Memo</th><th class="num">Debit</th><th class="num">Credit</th><th class="num">Base debit</th><th class="num">Base credit</th></tr></thead>
+  <tbody>{% for l in e.lines %}<tr>
+    <td>{{ l.line_no }}</td><td><a href="{% url 'ledger' l.account_id %}">{{ l.account_code }} {{ l.account_name }}</a></td><td>{{ l.memo|default:"" }}</td>
+    <td class="num">{{ l.debit|amount }}</td><td class="num">{{ l.credit|amount }}</td><td class="num">{{ l.base_debit|amount }}</td><td class="num">{{ l.base_credit|amount }}</td>
+  </tr>{% endfor %}</tbody>
+  <tfoot><tr><td colspan="3">Totals</td><td class="num">{{ totals.debit|amount }}</td><td class="num">{{ totals.credit|amount }}</td><td class="num">{{ totals.base_debit|amount }}</td><td class="num">{{ totals.base_credit|amount }}</td></tr></tfoot>
+</table></div>
+{% endblock %}

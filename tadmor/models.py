@@ -428,6 +428,8 @@ class Balance(Unmanaged):
 
 class SalesInvoiceBalance(Balance):
     invoice = models.OneToOneField(SalesInvoice, DO_NOTHING, primary_key=True, db_column="invoice_id", related_name="bal")
+    currency_code = models.CharField(max_length=3)
+    due_date = models.DateField(null=True)
     payment_status = models.TextField()
 
     class Meta(Unmanaged.Meta):
@@ -436,6 +438,8 @@ class SalesInvoiceBalance(Balance):
 
 class PurchaseBillBalance(Balance):
     bill = models.OneToOneField(PurchaseBill, DO_NOTHING, primary_key=True, db_column="bill_id", related_name="bal")
+    currency_code = models.CharField(max_length=3)
+    due_date = models.DateField(null=True)
     payment_status = models.TextField()
 
     class Meta(Unmanaged.Meta):

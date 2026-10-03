@@ -1,0 +1,20 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1><a href="{% url 'trial-balance' %}">Trial balance</a></div>
+{% include "ui/report_filters.html" with filters=filters_ft %}
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>Date</th><th>Entry</th><th>Reference</th><th>Memo</th>
+    {% if foreign %}<th>Currency</th><th class="num">Debit</th><th class="num">Credit</th>{% endif %}
+    <th class="num">{% if foreign %}Base debit{% else %}Debit{% endif %}</th><th class="num">{% if foreign %}Base credit{% else %}Credit{% endif %}</th><th class="num">Balance</th></tr></thead>
+  <tbody>
+    <tr><td colspan="{% if foreign %}9{% else %}6{% endif %}" class="muted">Opening balance</td><td class="num">{{ opening|amount }}</td></tr>
+    {% for r in rows %}<tr>
+      <td>{{ r.entry_date }}</td><td><a href="{% url 'journal-entry' r.journal_entry_id %}">{{ r.journal_entry_id }}</a></td>
+      <td>{{ r.reference|default:"" }}</td><td>{{ r.memo|default:"" }}</td>
+      {% if foreign %}<td>{{ r.currency_code }}</td><td class="num">{{ r.debit|amount }}</td><td class="num">{{ r.credit|amount }}</td>{% endif %}
+      <td class="num">{{ r.base_debit|amount }}</td><td class="num">{{ r.base_credit|amount }}</td><td class="num">{{ r.running|amount }}</td>
+    </tr>{% endfor %}
+  </tbody>
+  <tfoot><tr><td colspan="{% if foreign %}9{% else %}6{% endif %}">Closing balance ({{ base }}, debit-positive)</td><td class="num">{{ closing|amount }}</td></tr></tfoot>
+</table></div>
+{% endblock %}

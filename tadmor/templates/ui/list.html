@@ -1,0 +1,30 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead">
+  <h1>{{ title }}</h1>
+  {% if new %}<a class="button primary" href="{{ new.url }}">{{ new.text }}</a>{% endif %}
+</div>
+{% block above %}{% endblock %}
+{% if rows %}
+<div class="tablewrap">
+<table class="grid{% if rows.0.link %} clickable{% endif %}">
+  <thead><tr>{% for c in columns %}<th{% if c.numeric %} class="num"{% endif %}>{{ c.label }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for row in rows %}
+  <tr>
+    {% for c, v in row.cells %}
+    <td{% if c.numeric %} class="num"{% endif %}>
+      {% if forloop.first and row.link %}<a href="{{ row.link }}">{% endif %}
+      {% include "ui/cell.html" %}
+      {% if forloop.first and row.link %}</a>{% endif %}
+    </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="empty">{{ empty }}</p>
+{% endif %}
+{% endblock %}

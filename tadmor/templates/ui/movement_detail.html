@@ -1,0 +1,39 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }} <span class="pill s-{{ m.status }}">{{ m.status|label }}</span></h1></div>
+<div class="card"><dl class="facts">
+  <dt>Product</dt><dd>{{ product.sku }} {{ product.name }}</dd>
+  <dt>Warehouse</dt><dd>{{ warehouse.code }} {{ warehouse.name }}</dd>
+  <dt>Type</dt><dd>{{ m.movement_type|label }}</dd>
+  <dt>Date</dt><dd>{{ m.movement_date }}</dd>
+  <dt>Quantity</dt><dd>{{ m.quantity|qty }}</dd>
+  <dt>Unit cost</dt><dd>{{ m.unit_cost|amount }}</dd>
+  <dt>Total cost</dt><dd>{{ m.total_cost|amount }}</dd>
+  <dt>Reference</dt><dd>{{ m.reference|default:"—" }}</dd>
+  <dt>Notes</dt><dd>{{ m.notes|default:"—"|linebreaksbr }}</dd>
+  <dt>Source</dt><dd>{% if m.source_type %}Order fulfilment ({{ m.source_type|label }}){% else %}Entered by hand{% endif %}</dd>
+  <dt>Journal entry</dt><dd>{% if m.journal_entry_id %}<a href="{% url 'journal-entry' m.journal_entry_id %}">Entry {{ m.journal_entry_id }}</a>{% else %}—{% endif %}</dd>
+</dl></div>
+<h2>Actions</h2>
+<div class="card">
+  <div class="actions">
+  {% if m.status == "draft" %}
+    {% if m.movement_type == "receipt" or m.movement_type == "issue" %}
+    <form method="post" action="{% url 'stock-movements-post' m.id %}" class="actions">{% csrf_token %}
+      {% if m.movement_type == "receipt" %}
+      <label>Account to credit
+        <select name="credit_account_id" style="width:auto">{% for v, t in credit_choices %}<option value="{{ v }}"{% if v|stringformat:"s" == default_credit|stringformat:"s" %} selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+      </label>
+      {% endif %}
+      <button class="primary">Post</button>
+    </form>
+    {% else %}<span class="muted">Only receipts and issues post to the ledger.</span>{% endif %}
+    {% if not m.source_type %}<a class="button" href="{% url 'stock-movements-edit' m.id %}">Edit</a>{% endif %}
+    <a class="button" href="{% url 'stock-movements-delete' m.id %}">Delete</a>
+  {% elif user.is_admin %}
+    <form method="post" action="{% url 'stock-movements-unpost' m.id %}">{% csrf_token %}<button>Unpost</button></form>
+  {% endif %}
+  </div>
+  {% for name, message in action_error.items %}<p class="error" role="alert">{{ message }}</p>{% endfor %}
+</div>
+{% endblock %}

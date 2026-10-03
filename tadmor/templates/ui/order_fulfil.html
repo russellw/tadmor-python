@@ -1,0 +1,32 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1></div>
+<form method="post" class="card form wide">
+  {% csrf_token %}
+  <div class="columns">
+  {% if billing %}
+    <label class="field"><span>{{ number_label }} <span class="req">*</span></span><input name="number" value="{{ values.number }}" required></label>
+    <label class="field"><span>{{ date_label }} <span class="req">*</span></span><input type="date" name="date" value="{{ values.date }}" required></label>
+    <label class="field"><span>Due date</span><input type="date" name="due_date" value="{{ values.due_date }}"></label>
+  {% else %}
+    <label class="field"><span>Warehouse <span class="req">*</span></span><select name="warehouse_id" required><option value="">Choose…</option>
+      {% for v, t in warehouses %}<option value="{{ v }}"{% if v|stringformat:"s" == values.warehouse_id %} selected{% endif %}>{{ t }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Date</span><input type="date" name="movement_date" value="{{ values.movement_date }}"></label>
+    <label class="field"><span>Reference</span><input name="reference" value="{{ values.reference }}"></label>
+  {% endif %}
+  </div>
+  <h2>{% if billing %}Lines to {{ kind.bill_verb }}{% else %}Stocked lines to {{ kind.move_verb }}{% endif %}</h2>
+  {% if rows %}
+  <div class="tablewrap"><table class="grid lines">
+    <thead><tr><th>#</th><th>Description</th><th class="num">Ordered</th><th class="num">Remaining</th><th class="num">This time</th></tr></thead>
+    <tbody>{% for r in rows %}<tr><td>{{ r.line_no }}</td><td>{{ r.description }}</td><td class="num">{{ r.quantity|qty }}</td>
+      <td class="num">{{ r.remaining|qty }}</td>
+      <td><input name="qty_{{ r.order_line_id }}" class="num narrow" inputmode="decimal" value="{{ r.chosen|qty }}"></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="muted">Lower a quantity for a partial {% if billing %}{{ kind.bill_verb }}{% else %}{{ kind.move_verb }}{% endif %}; quantities above what remains are capped.</p>
+  {% else %}<p class="empty">Nothing remains to {% if billing %}{{ kind.bill_verb }}{% else %}{{ kind.move_verb }}{% endif %}.</p>{% endif %}
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <div class="actions"><button class="primary">{% if billing %}Create draft {% if kind.sales %}invoice{% else %}bill{% endif %}{% else %}Create draft movements{% endif %}</button>
+    <a class="button" href="{{ back }}">Cancel</a></div>
+</form>
+{% endblock %}

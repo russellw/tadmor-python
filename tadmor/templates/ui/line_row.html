@@ -1,0 +1,11 @@
+<tr class="line">
+  <td><select name="line_product_id" class="product"><option value="">—</option>{% for v, t in product_choices %}<option value="{{ v }}"{% if l and v|stringformat:"s" == l.product_id|stringformat:"s" %} selected{% endif %}>{{ t }}</option>{% endfor %}</select></td>
+  <td><input name="line_description" class="desc" value="{{ l.description|default:'' }}"></td>
+  <td><input name="line_quantity" class="num narrow qty" inputmode="decimal" value="{{ l.quantity|default:'1' }}"></td>
+  <td><input name="line_price" class="num narrow price" inputmode="decimal" value="{{ l.price|default:'' }}"></td>
+  <td><select name="line_account" class="account"><option value="">Product default</option>{% for v, t in account_choices %}<option value="{{ v }}"{% if l and v|stringformat:"s" == l.account|stringformat:"s" %} selected{% endif %}>{{ t }}</option>{% endfor %}</select></td>
+  <td><select name="line_tax_code" class="taxcode"><option value="">—</option>{% for v, t in tax_choices %}<option value="{{ v }}"{% if l and v == l.tax_code %} selected{% endif %}>{{ v }}</option>{% endfor %}</select></td>
+  <td><input name="line_tax_rate" class="num narrow rate" inputmode="decimal" value="{{ l.tax_rate|default:'0' }}"></td>
+  <td class="num out-subtotal"></td><td class="num out-tax"></td><td class="num out-total"></td>
+  <td><button type="button" class="link remove">Remove</button></td>
+</tr>

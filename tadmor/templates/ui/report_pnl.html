@@ -1,0 +1,18 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>Profit and loss</h1></div>
+{% include "ui/report_filters.html" with filters=filters_ft %}
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>Code</th><th>Account</th><th class="num">Amount</th></tr></thead>
+  <tbody>
+    <tr class="section"><td colspan="3">Revenue</td></tr>
+    {% include "ui/report_rows.html" with rows=revenue %}
+    <tr class="subtotal"><td colspan="2">Total revenue</td><td class="num">{{ total_revenue|amount }}</td></tr>
+    <tr class="section"><td colspan="3">Expenses</td></tr>
+    {% include "ui/report_rows.html" with rows=expense %}
+    <tr class="subtotal"><td colspan="2">Total expenses</td><td class="num">{{ total_expense|amount }}</td></tr>
+  </tbody>
+  <tfoot><tr><td colspan="2">Net income</td><td class="num">{{ net_income|amount }}</td></tr></tfoot>
+</table></div>
+<p class="muted">Base-currency amounts from posted entries; year-end closing entries are excluded.</p>
+{% endblock %}

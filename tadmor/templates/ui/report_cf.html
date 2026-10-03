@@ -1,0 +1,21 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>Cash flow</h1></div>
+{% include "ui/report_filters.html" with filters=filters_ft %}
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>Code</th><th>Account</th><th class="num">Amount</th></tr></thead>
+  <tbody>
+  {% for s in sections %}
+    <tr class="section"><td colspan="3">{{ s.name|capfirst }} activities</td></tr>
+    {% if s.name == "operating" %}<tr><td></td><td>Net income</td><td class="num">{{ cf.net_income|amount }}</td></tr>{% endif %}
+    {% for r in s.rows %}<tr><td><a href="{% url 'ledger' r.account_id %}">{{ r.code }}</a></td><td>{{ r.name }}</td><td class="num">{{ r.amount|amount }}</td></tr>{% endfor %}
+    <tr class="subtotal"><td colspan="2">Net cash from {{ s.name }} activities</td><td class="num">{{ s.subtotal|amount }}</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr><td colspan="2">Opening cash</td><td class="num">{{ cf.opening_cash|amount }}</td></tr>
+    <tr><td colspan="2">Net cash flow</td><td class="num">{{ cf.net_cash_flow|amount }}</td></tr>
+    <tr><td colspan="2">Closing cash</td><td class="num">{{ cf.closing_cash|amount }}</td></tr>
+  </tfoot>
+</table></div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1></div>
+<div class="card">
+  <p class="notice">Created {{ movements|length }} draft stock movement{{ movements|length|pluralize }}. Post each one to record it in the ledger.</p>
+  <ul>{% for id, url in movements %}<li><a href="{{ url }}">Stock movement {{ id }}</a></li>{% endfor %}</ul>
+  <p><a href="{{ back }}">Back to the order</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>{{ title }}</h1></div>
+<form method="post" class="card form wide" id="docform">
+  {% csrf_token %}
+  <div class="columns">
+    {% for row in header %}{% include "ui/field.html" %}{% endfor %}
+  </div>
+  <h2>Lines</h2>
+  <div class="tablewrap">
+  <table class="grid lines" id="lines">
+    <thead><tr>
+      <th>Product</th><th>Description *</th><th class="num">Quantity</th><th class="num">{{ price_label }}</th>
+      <th>{{ account_label }}</th><th>Tax code</th><th class="num">Tax %</th>
+      <th class="num">Subtotal</th><th class="num">Tax</th><th class="num">Total</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for l in lines %}{% include "ui/line_row.html" %}{% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <template id="line-template">{% include "ui/line_row.html" with l=None %}</template>
+  <div class="actions"><button type="button" id="add-line">Add line</button>
+    {% if is_order %}<span class="muted">Order quantities must be greater than zero.</span>{% endif %}</div>
+  <table class="totals">
+    <tr><td>Subtotal</td><td class="num" id="sum-subtotal"></td></tr>
+    <tr><td>Tax</td><td class="num" id="sum-tax"></td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong id="sum-total"></strong></td></tr>
+  </table>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <div class="actions">
+    <button class="primary">Save draft</button>
+    <a class="button" href="{{ back }}">Cancel</a>
+  </div>
+</form>
+{{ client_data|json_script:"client-data" }}
+{% endblock %}

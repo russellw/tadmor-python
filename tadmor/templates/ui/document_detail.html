@@ -1,0 +1,78 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead">
+  <h1>{{ kind.label }} {{ number }} <span class="pill s-{{ doc.status }}">{{ doc.status|label }}</span>
+    <span class="pill s-{{ settle_status }}">{{ settle_status|label }}</span></h1>
+  <a class="button" href="/api/{{ c }}/{{ doc.id }}/pdf" target="_blank" rel="noopener">PDF</a>
+</div>
+
+<div class="columns">
+  <div class="card">
+    <dl class="facts">
+      <dt>{% if kind.sales %}Customer{% else %}Supplier{% endif %}</dt><dd><a href="{{ party_url }}">{{ party }}</a></dd>
+      <dt>Date</dt><dd>{{ date }}</dd>
+      {% if kind.has_due_date %}<dt>Due date</dt><dd>{{ doc.due_date|default:"—" }}</dd>{% endif %}
+      <dt>Currency</dt><dd>{{ doc.currency_code }}</dd>
+      <dt>Reference</dt><dd>{{ doc.reference|default:"—" }}</dd>
+      <dt>Memo</dt><dd>{{ doc.memo|default:"—"|linebreaksbr }}</dd>
+      <dt>Journal entry</dt><dd>{% if doc.journal_entry_id %}<a href="{% url 'journal-entry' doc.journal_entry_id %}">Entry {{ doc.journal_entry_id }}</a>{% else %}—{% endif %}</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <table class="totals" style="margin-left:0;width:100%">
+      <tr><td>Subtotal</td><td class="num">{{ doc.currency_code }} {{ subtotal|amount }}</td></tr>
+      <tr><td>Tax</td><td class="num">{{ doc.currency_code }} {{ tax_total|amount }}</td></tr>
+      <tr><td><strong>Total</strong></td><td class="num"><strong>{{ doc.currency_code }} {{ doc.total|amount }}</strong></td></tr>
+      <tr><td>{% if kind.credit %}Applied{% else %}Paid or credited{% endif %}</td><td class="num">{{ doc.currency_code }} {{ doc.amount_applied|amount }}</td></tr>
+      <tr><td><strong>{% if kind.credit %}Unapplied{% else %}Balance{% endif %}</strong></td><td class="num"><strong>{{ doc.currency_code }} {{ doc.balance|amount }}</strong></td></tr>
+    </table>
+  </div>
+</div>
+
+<h2>Actions</h2>
+<div class="card">
+  <div class="actions">
+    {% if doc.status == "draft" %}
+      <form method="post" action="{% url c|add:'-post' doc.id %}">{% csrf_token %}<button class="primary">Post</button></form>
+      {% if not order_linked %}<a class="button" href="{% url c|add:'-edit' doc.id %}">Edit</a>{% else %}<span class="muted">Produced from an order: delete it to return the quantities, but it cannot be edited.</span>{% endif %}
+      <a class="button" href="{% url c|add:'-delete' doc.id %}">Delete</a>
+    {% elif doc.status == "posted" %}
+      {% if can_apply %}
+      <form method="post" action="{% url c|add:'-apply' doc.id %}">{% csrf_token %}<button class="primary">Apply to open {% if kind.sales %}invoices{% else %}bills{% endif %}</button></form>
+      {% endif %}
+      {% if user.is_admin %}<form method="post" action="{% url c|add:'-unpost' doc.id %}">{% csrf_token %}<button>Unpost</button></form>{% endif %}
+    {% endif %}
+  </div>
+  {% for name, message in action_error.items %}{% if name != "email" %}<p class="error" role="alert">{{ message }}</p>{% endif %}{% endfor %}
+  {% url c|add:'-email' doc.id as email_url %}
+  {% include "ui/document_actions_email.html" %}
+</div>
+
+<h2>Lines</h2>
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>#</th><th>Description</th><th class="num">Quantity</th><th class="num">{% if kind.sales %}Unit price{% else %}Unit cost{% endif %}</th>
+    <th>Tax code</th><th class="num">Tax %</th><th class="num">Subtotal</th><th class="num">Tax</th><th class="num">Total</th></tr></thead>
+  <tbody>
+  {% for l in lines %}<tr>
+    <td>{{ l.line_no }}</td><td>{{ l.description }}</td><td class="num">{{ l.quantity|qty }}</td>
+    <td class="num">{{ l|get:price_field|amount }}</td><td>{{ l.tax_code|default:"—" }}</td><td class="num">{{ l.tax_rate|qty }}</td>
+    <td class="num">{{ l.line_subtotal|amount }}</td><td class="num">{{ l.tax_amount|amount }}</td><td class="num">{{ l.line_total|amount }}</td>
+  </tr>{% empty %}<tr><td colspan="9" class="empty">No lines.</td></tr>{% endfor %}
+  </tbody>
+  <tfoot><tr><td colspan="6">Totals ({{ doc.currency_code }})</td><td class="num">{{ subtotal|amount }}</td><td class="num">{{ tax_total|amount }}</td><td class="num">{{ doc.total|amount }}</td></tr></tfoot>
+</table></div>
+
+{% if kind.credit %}
+<h2>Applied to</h2>
+{% if applied_to %}
+<div class="tablewrap"><table class="grid"><thead><tr><th>{% if kind.sales %}Invoice{% else %}Bill{% endif %}</th><th class="num">Amount applied</th></tr></thead>
+<tbody>{% for a in applied_to %}<tr><td><a href="{{ a.url }}">{{ a.document_number }}</a></td><td class="num">{{ doc.currency_code }} {{ a.amount_applied|amount }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="empty">Not applied to anything yet.</p>{% endif %}
+{% else %}
+<h2>Payments and credits applied</h2>
+{% if applied_from %}
+<div class="tablewrap"><table class="grid"><thead><tr><th>Document</th><th>Date</th><th>Status</th><th class="num">Amount applied</th></tr></thead>
+<tbody>{% for a in applied_from %}<tr><td><a href="{{ a.url }}">{{ a.label }}</a></td><td>{{ a.date|date:"Y-m-d" }}</td><td><span class="pill s-{{ a.status }}">{{ a.status|label }}</span></td><td class="num">{{ doc.currency_code }} {{ a.amount_applied|amount }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="empty">Nothing applied yet.</p>{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead">
+  <h1>Periods and year-end</h1>
+  <div class="actions"><a class="button primary" href="{% url 'fiscal-years-new' %}">New fiscal year</a>
+    <a class="button" href="{% url 'accounting-periods-new' %}">New period</a></div>
+</div>
+{% if user.is_admin and closable or user.is_admin and reopenable %}
+<div class="card" style="margin-bottom:1rem">
+  <strong>Year-end</strong>
+  <div class="actions" style="margin-top:.4rem">
+    {% if closable %}<a class="button" href="{% url 'fiscal-years-close' closable.id %}">Close {{ closable.name }}…</a>{% endif %}
+    {% if reopenable %}<form method="post" action="{% url 'fiscal-years-reopen' reopenable.id %}">{% csrf_token %}<button>Reopen {{ reopenable.name }}</button></form>{% endif %}
+  </div>
+  {% if year_error %}<p class="error" role="alert">{{ year_error }}</p>{% endif %}
+</div>
+{% endif %}
+{% for item in years %}
+<h2><a href="{% url 'fiscal-years-edit' item.year.id %}">{{ item.year.name }}</a>
+  <span class="muted" style="font-weight:normal">{{ item.year.start_date|date:"Y-m-d" }} to {{ item.year.end_date|date:"Y-m-d" }}</span>
+  <span class="pill s-{{ item.year.status }}">{{ item.year.status|label }}</span></h2>
+{% if item.periods %}
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>Period</th><th>From</th><th>To</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for p in item.periods %}<tr>
+    <td><a href="{% url 'accounting-periods-edit' p.id %}">{{ p.name }}</a></td><td>{{ p.start_date|date:"Y-m-d" }}</td><td>{{ p.end_date|date:"Y-m-d" }}</td>
+    <td><span class="pill s-{{ p.status }}">{{ p.status|label }}</span></td>
+    <td><form method="post" action="{% url 'accounting-periods-toggle' p.id %}" class="inline">{% csrf_token %}<button class="link">{% if p.status == "open" %}Close{% else %}Reopen{% endif %}</button></form>
+      {% if p.error %}<p class="error" role="alert">{{ p.error }}</p>{% endif %}
+    </td></tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">No periods yet. Posting into this year creates monthly periods as needed.</p>{% endif %}
+{% empty %}
+<p class="empty">No fiscal years yet. Create one before posting anything.</p>
+{% endfor %}
+{% endblock %}

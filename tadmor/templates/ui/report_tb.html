@@ -1,0 +1,13 @@
+{% extends "ui/base.html" %}
+{% block content %}
+<div class="pagehead"><h1>Trial balance</h1></div>
+<div class="tablewrap"><table class="grid">
+  <thead><tr><th>Code</th><th>Account</th><th>Type</th><th class="num">Debit</th><th class="num">Credit</th><th class="num">Balance</th></tr></thead>
+  <tbody>{% for r in rows %}<tr>
+    <td><a href="{% url 'ledger' r.account_id %}">{{ r.code }}</a></td><td>{{ r.name }}</td><td>{{ r.account_type|label }}</td>
+    <td class="num">{{ r.total_debit|amount }}</td><td class="num">{{ r.total_credit|amount }}</td><td class="num">{{ r.balance|amount }}</td>
+  </tr>{% endfor %}</tbody>
+  <tfoot><tr><td colspan="3">Totals</td><td class="num">{{ total_debit|amount }}</td><td class="num">{{ total_credit|amount }}</td><td class="num">{{ total_balance|amount }}</td></tr></tfoot>
+</table></div>
+<p class="muted">Balances are debit-positive, in the base currency, from posted entries.</p>
+{% endblock %}

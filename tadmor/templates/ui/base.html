@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ title }}{% endblock %} · Tadmor</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+{% if user %}
+<input type="checkbox" id="navtoggle" class="navtoggle" aria-hidden="true">
+<header class="topbar">
+  <label for="navtoggle" class="navbutton">Menu</label>
+  <a class="brand" href="/">Tadmor</a>
+  <div class="who">
+    <span>{{ user.full_name }}{% if user.is_admin %} <span class="tag">admin</span>{% endif %}</span>
+    <form method="post" action="/logout">{% csrf_token %}<button class="link">Sign out</button></form>
+  </div>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Main">
+    {% for group in nav %}
+    <div class="navgroup">
+      <div class="navtitle">{{ group.title }}</div>
+      {% for link in group.links %}<a href="{{ link.url }}"{% if link.active %} class="active" aria-current="page"{% endif %}>{{ link.text }}</a>{% endfor %}
+    </div>
+    {% endfor %}
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+<main class="bare">{% block bare %}{% endblock %}</main>
+{% endif %}
+</body>
+</html>
