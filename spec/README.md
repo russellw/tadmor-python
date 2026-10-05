@@ -128,6 +128,12 @@ principles are fixed:
   that is practical, a hermetic build, install-time scripts blocked, and
   a cooldown before adopting newly published versions.
 - **New dependencies need a conversation first**, as in tadmor.
+- **Commit a dependency manifest**, `dependencies.json`, written by the
+  counterpart's own tooling and kept current with its lockfile. It lists
+  every third-party package, its category, and the publishing identities
+  behind it, in the format of `docs/counterpart-metrics.md` in tadmor,
+  whose `tools/measure.py` reads it. The tooling that knows a package
+  manager lives with the project that uses it.
 - **Record each decision** in the counterpart's own docs: what was
   needed, the alternatives considered with their measured trees, what was
   chosen, and what would make it worth revisiting. tadmor's
