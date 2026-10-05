@@ -40,7 +40,7 @@ conformance: ## Run tadmor's conformance suite against a fresh server (wipes the
 check: vendor-check ## Django system checks and the vendor tree check
 	DATABASE_URL=$(DATABASE_URL) $(PYTHON) manage.py check
 
-vendor-check: ## Verify vendor/site matches vendor/lock.txt (offline)
+vendor-check: ## Verify vendor/site and dependencies.json against vendor/lock.txt (offline)
 	$(PYTHON) tools/vendor.py check
 
 vendor-sync: ## Re-download and unpack every wheel in vendor/lock.txt (network)

@@ -8,6 +8,12 @@ publish cooldown, and appends it to the lock. `check` verifies that
 vendor/site/ is exactly what the lock describes, so a review of the lock
 diff is a review of what changed.
 
+`manifest` writes dependencies.json, the dependency manifest tadmor's
+tools/measure.py reads (tadmor's docs/counterpart-metrics.md): every
+wheel, its category, and the PyPI accounts that can publish it, looked up
+online; `sync` runs it, and `check` verifies that it lists exactly the
+locked wheels.
+
 Standard library only: this script runs before anything is vendored.
 """
 
@@ -16,8 +22,11 @@ import hashlib
 import io
 import json
 import shutil
+import subprocess
 import sys
+import time
 import urllib.request
+import xmlrpc.client
 import zipfile
 from pathlib import Path
 
@@ -26,6 +35,7 @@ LOCK = ROOT / "vendor" / "lock.txt"
 SITE = ROOT / "vendor" / "site"
 COOLDOWN_DAYS = 7
 PYPI = "https://pypi.org/pypi"
+MANIFEST = ROOT / "dependencies.json"
 
 
 def read_lock():
@@ -86,6 +96,7 @@ def sync():
                     sys.exit(f"{filename}: unsafe path {member}")
             z.extractall(SITE)
         print(f"vendored {filename}")
+    manifest()
 
 
 def check():
@@ -119,9 +130,68 @@ def check():
         if p.is_file() and p.relative_to(SITE).as_posix() not in recorded and "__pycache__" not in p.parts:
             print(f"unexpected vendor/site/{p.relative_to(SITE).as_posix()}")
             problems += 1
+    problems += check_manifest()
     if problems:
         sys.exit(f"{problems} problem(s) in vendor/site")
-    print("vendor/site matches vendor/lock.txt")
+    print("vendor/site and dependencies.json match vendor/lock.txt")
+
+
+def identities(name, rpc):
+    """The project's publishing identities: each account PyPI lists in a role
+    (Owner or Maintainer). A project published through a PyPI organization
+    lists none and counts as one identity, the organization (tadmor's
+    docs/counterpart-metrics.md, section 1)."""
+    for attempt in range(6):
+        try:
+            roles = rpc.package_roles(name)
+            break
+        except xmlrpc.client.Fault as e:
+            # PyPI rate-limits XML-RPC; it says when to try again.
+            if "TooManyRequests" not in e.faultString or attempt == 5:
+                raise
+            time.sleep(2 * (attempt + 1))
+    return sorted({f"pypi:{user}" for _role, user in roles}) or [f"pypi-org:{name.lower()}"]
+
+
+def manifest():
+    """Write dependencies.json. Every wheel is unpacked into vendor/site and
+    imported, so every one is runtime."""
+    rpc = xmlrpc.client.ServerProxy(PYPI)
+    packages = [{
+        "ecosystem": "pypi", "name": name.lower(), "version": version, "category": "runtime",
+        "identities": identities(name, rpc), "evidence": f"PyPI XML-RPC package_roles({name})",
+    } for name, version, _filename, _digest in read_lock()]
+    packages.sort(key=lambda p: p["name"])
+    tracked = subprocess.run(["git", "-C", str(ROOT), "ls-files", "vendor/site"], check=True,
+                             capture_output=True, text=True).stdout.split()
+    files = [ROOT / f for f in tracked]
+    doc = {
+        "format": "tadmor-dependencies/1",
+        "generator": "tools/vendor.py manifest (tadmor-python)",
+        "platform": "linux/x64",
+        "toolchains": ["CPython (Python Software Foundation)"],
+        "packages": packages,
+        "sources": [{
+            "label": "PyPI vendor/site (runtime)",
+            "bytes": sum(f.stat().st_size for f in files),
+            "lines": sum(sum(1 for line in f.open(encoding="utf-8", errors="replace") if line.strip())
+                         for f in files if f.suffix == ".py"),
+        }],
+    }
+    MANIFEST.write_text(json.dumps(doc, indent=1) + "\n")
+    print(f"wrote {MANIFEST.relative_to(ROOT)}: {len(packages)} packages")
+
+
+def check_manifest():
+    """1 if dependencies.json does not list exactly the locked wheels, else 0."""
+    if not MANIFEST.exists():
+        print("dependencies.json is missing; run tools/vendor.py manifest")
+        return 1
+    listed = {(p["name"], p["version"]) for p in json.loads(MANIFEST.read_text())["packages"]}
+    if listed != {(name.lower(), version) for name, version, _f, _d in read_lock()}:
+        print("dependencies.json does not list the locked wheels; run tools/vendor.py manifest")
+        return 1
+    return 0
 
 
 def main():
@@ -132,8 +202,10 @@ def main():
         sync()
     elif args == ["check"]:
         check()
+    elif args == ["manifest"]:
+        manifest()
     else:
-        sys.exit("usage: tools/vendor.py add NAME==VERSION | sync | check")
+        sys.exit("usage: tools/vendor.py add NAME==VERSION | sync | check | manifest")
 
 
 if __name__ == "__main__":

@@ -67,6 +67,12 @@ particular:
   `check` verifies `vendor/site/` file by file against each wheel's `RECORD`,
   offline. A dependency change is therefore reviewable as a lock diff plus a
   source diff.
+- **Dependency manifest.** `tools/vendor.py manifest` (which `sync` runs)
+  writes `dependencies.json`, the manifest tadmor's `tools/measure.py`
+  reads (tadmor's `docs/counterpart-metrics.md`): every wheel, its
+  category, and the accounts PyPI lists in a role on the project, read
+  through PyPI's XML-RPC `package_roles`. `check` also verifies that it
+  lists exactly the locked wheels.
 - **Cooldown.** `tools/vendor.py add` refuses a version published less than
   7 days ago, as tadmor's pnpm policy does.
 - **Toolchain:** CPython 3.13 or later (Debian 13 ships 3.13). On 3.13+

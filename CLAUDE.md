@@ -18,6 +18,7 @@ Supply-chain conscious throughout; keep the third-party footprint small, pinned,
 reviewable in-repo. The only permitted third-party packages are those listed in
 docs/stack.md. New packages need a conversation first. All third-party source is
 vendored and committed; nothing is installed from PyPI at build or run time.
+A dependency change commits vendor/lock.txt, vendor/site/, and dependencies.json together.
 
 Working on it:
 Business rules live in tadmor/services/, shared by the JSON API (tadmor/api/)

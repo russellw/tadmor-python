@@ -19,7 +19,7 @@ tadmor/            the Django project, which is also its only app
   migrate.py       applies db/migrations, the shared schema
 spec/, conformance/, db/migrations/   copied from tadmor (spec/UPSTREAM); never edited here
 vendor/            third-party wheels, unpacked and committed (vendor/lock.txt)
-tools/             vendor.py (vendoring), conformance.sh (suite wrapper)
+tools/             vendor.py (vendoring, dependencies.json), conformance.sh (suite wrapper)
 docs/              decisions and notes
 ```
 
@@ -67,5 +67,7 @@ Five packages, all pure Python, all vendored: Django, asgiref, sqlparse,
 psycopg, and gunicorn. `vendor/lock.txt` pins each wheel by sha256;
 `tools/vendor.py` fetches and verifies them, refuses versions published less
 than 7 days ago, and checks the unpacked tree against each wheel's `RECORD`.
+It also writes `dependencies.json`, the manifest tadmor measures this
+counterpart from.
 A clean clone runs offline. New packages need a conversation first. See
 [`docs/stack.md`](docs/stack.md).
