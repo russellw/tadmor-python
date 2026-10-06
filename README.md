@@ -61,6 +61,9 @@ make check                   # Django checks, and vendor/ against its lock
 The server applies pending migrations when it starts. Endpoints: the UI at
 `/`, the JSON API under `/api/`, and the probes `/healthz` and `/readyz`.
 
+[`docs/ui-coverage.md`](docs/ui-coverage.md) records how each item of the UI
+checklist in `spec/domain.md` §13 was checked.
+
 ## Dependency and supply-chain policy
 
 Five packages, all pure Python, all vendored: Django, asgiref, sqlparse,
